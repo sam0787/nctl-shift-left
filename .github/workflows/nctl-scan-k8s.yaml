@@ -25,10 +25,23 @@ jobs:
       - name: Check nctl version
         run: nctl version
 
-      - name: NCTL Scan - Kubernetes
-        run: nctl scan kubernetes --policies controls/pod-security --resources config-files/k8s 
-
       - name: NCTL Scan - Kubernetes Detailed Report
-        run: nctl scan kubernetes --policies controls/pod-security --resources config-files/k8s --details 
+        run: nctl scan kubernetes --policies controls/pod-security --resources config-files/k8s --details --audit-as-warn
+      
+      - name: Run mutate policy 
+        run: |
+          nctl remediate -r config-files/k8s -p controls/pod-security -m controls/pod-security/remediate/remediate-disallow-host-namespaces.yaml
+          echo "Mutation completed"
+          
+      - name: Run Remediation
+        run : |
+          nctl remediate -r config-files/k8s -p https://github.com/nirmata/kyverno-policies/blob/main/pod-security/baseline/disallow-host-namespaces/disallow-host-namespaces.yaml
+          echo "Mutation completed"
+
+      # - name: NCTL Scan - Kubernetes
+      #   run: nctl scan kubernetes --policies controls/pod-security --resources config-files/k8s 
+
+      # - name: NCTL Scan - Kubernetes Detailed Report
+      #   run: nctl scan kubernetes --policies controls/pod-security --resources config-files/k8s --details 
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
